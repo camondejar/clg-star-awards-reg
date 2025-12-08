@@ -233,7 +233,7 @@
 
         <label for="guestInput">Search your name and select from the list</label>
         <input list="guestList" id="guestInput" type="text" autocomplete="off"
-               placeholder="Start typing your full name">
+               placeholder="Start typing your full name" />
 
         <datalist id="guestList"></datalist>
 
@@ -248,7 +248,9 @@
     </div>
 
     <script>
-      const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx4pMmCr50sgeu3LmHUFj7lEwTzu6-SsPYVkRuhVgUyOz0BfISsqTwPOQIAecReALzM/exec';
+      // 🔗 REPLACE THIS WITH YOUR OWN GAS WEB APP URL
+      const GAS_WEB_APP_URL =
+        'https://script.google.com/macros/s/AKfycbx4pMmCr50sgeu3LmHUFj7lEwTzu6-SsPYVkRuhVgUyOz0BfISsqTwPOQIAecReALzM/exec';
 
       const guestMap = {}; // name -> rowIndex
 
@@ -259,13 +261,13 @@
 
         try {
           const resp = await fetch(GAS_WEB_APP_URL + '?mode=guestList');
-          if (!resp.ok) throw new Error('Network error');
+          if (!resp.ok) throw new Error('Network error loading guest list');
 
           const guests = await resp.json();
           const datalist = document.getElementById('guestList');
           datalist.innerHTML = '';
 
-          guests.forEach(g => {
+          guests.forEach((g) => {
             const opt = document.createElement('option');
             opt.value = g.name;
             datalist.appendChild(opt);
@@ -304,11 +306,15 @@
         try {
           const resp = await fetch(GAS_WEB_APP_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ rowIndex })
+            headers: {
+              // ❗ URL-encoded so there is NO CORS preflight
+              'Content-Type':
+                'application/x-www-form-urlencoded;charset=UTF-8',
+            },
+            body: 'rowIndex=' + encodeURIComponent(rowIndex),
           });
 
-          if (!resp.ok) throw new Error('Network error');
+          if (!resp.ok) throw new Error('Network error during registration');
 
           const data = await resp.json();
 
@@ -331,7 +337,8 @@
               (data.tableName ? ' – ' + data.tableName : '') +
               '.';
           } else {
-            seatText = 'Please proceed to the ushers for your assigned table.';
+            seatText =
+              'Please proceed to the ushers for your assigned table.';
           }
 
           result.innerHTML =
