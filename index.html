@@ -181,6 +181,13 @@
         color: #26140a;
         box-shadow: 0 9px 22px rgba(0, 0, 0, 0.8);
         width: 100%;
+        transition: opacity 0.15s ease, transform 0.1s ease;
+      }
+
+      button:disabled {
+        opacity: 0.7;
+        cursor: default;
+        box-shadow: 0 5px 14px rgba(0, 0, 0, 0.7);
       }
 
       #result {
@@ -200,6 +207,12 @@
         background: rgba(88, 16, 27, 0.96);
         border: 1px solid rgba(246, 97, 119, 0.8);
         color: #fdebed;
+      }
+
+      .loading {
+        background: rgba(10, 18, 32, 0.95);
+        border: 1px solid rgba(243, 199, 115, 0.5);
+        color: rgba(248, 243, 230, 0.9);
       }
 
       .footer-text {
@@ -256,8 +269,8 @@
 
       async function loadGuestList() {
         const resultDiv = document.getElementById('result');
-        resultDiv.textContent = '';
-        resultDiv.className = '';
+        resultDiv.className = 'loading';
+        resultDiv.textContent = 'Loading guest list…';
 
         try {
           const resp = await fetch(GAS_WEB_APP_URL + '?mode=guestList');
@@ -273,6 +286,10 @@
             datalist.appendChild(opt);
             guestMap[g.name] = g.rowIndex;
           });
+
+          // Clear the loading state once list is ready
+          resultDiv.textContent = '';
+          resultDiv.className = '';
         } catch (err) {
           resultDiv.className = 'error';
           resultDiv.textContent =
@@ -285,6 +302,7 @@
         const input = document.getElementById('guestInput');
         const value = input.value.trim();
         const result = document.getElementById('result');
+        const btn = document.getElementById('registerBtn');
 
         result.textContent = '';
         result.className = '';
@@ -303,11 +321,16 @@
           return;
         }
 
+        // 🔄 Show loading state on button
+        btn.disabled = true;
+        const originalLabel = btn.textContent;
+        btn.textContent = 'Registering…';
+
         try {
           const resp = await fetch(GAS_WEB_APP_URL, {
             method: 'POST',
             headers: {
-              // ❗ URL-encoded so there is NO CORS preflight
+              // URL-encoded so there is NO CORS preflight
               'Content-Type':
                 'application/x-www-form-urlencoded;charset=UTF-8',
             },
@@ -349,6 +372,10 @@
           result.textContent =
             'There was an error registering you. Please approach the registration desk.';
           console.error(err);
+        } finally {
+          // 🔁 Restore button state
+          btn.disabled = false;
+          btn.textContent = originalLabel;
         }
       }
 
