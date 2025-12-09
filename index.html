@@ -364,8 +364,10 @@
               'Please proceed to the ushers for your assigned table.';
           }
 
+          // 🔐 Fool-proof message includes guest name
           result.innerHTML =
             "<strong>You've successfully registered to the event!</strong><br>" +
+            'Registered under: <strong>' + (data.name || value) + '</strong>.<br>' +
             seatText;
         } catch (err) {
           result.className = 'error';
