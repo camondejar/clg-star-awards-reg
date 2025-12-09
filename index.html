@@ -221,12 +221,6 @@
         font-size: clamp(0.82rem, 2.2vw, 0.95rem);
         color: rgba(248, 243, 230, 0.76);
       }
-
-      @media (max-width: 480px) {
-        body {
-          padding: 24px 12px 32px;
-        }
-      }
     </style>
   </head>
 
@@ -261,7 +255,7 @@
     </div>
 
     <script>
-      // 🔗 REPLACE THIS WITH YOUR OWN GAS WEB APP URL
+      // 🔗 GAS Web App URL
       const GAS_WEB_APP_URL =
         'https://script.google.com/macros/s/AKfycbx4pMmCr50sgeu3LmHUFj7lEwTzu6-SsPYVkRuhVgUyOz0BfISsqTwPOQIAecReALzM/exec';
 
@@ -287,14 +281,12 @@
             guestMap[g.name] = g.rowIndex;
           });
 
-          // Clear the loading state once list is ready
           resultDiv.textContent = '';
           resultDiv.className = '';
         } catch (err) {
           resultDiv.className = 'error';
           resultDiv.textContent =
             'Unable to load guest list. Please approach the registration desk.';
-          console.error(err);
         }
       }
 
@@ -321,7 +313,7 @@
           return;
         }
 
-        // 🔄 Show loading state on button
+        // Loading state on button
         btn.disabled = true;
         const originalLabel = btn.textContent;
         btn.textContent = 'Registering…';
@@ -330,7 +322,6 @@
           const resp = await fetch(GAS_WEB_APP_URL, {
             method: 'POST',
             headers: {
-              // URL-encoded so there is NO CORS preflight
               'Content-Type':
                 'application/x-www-form-urlencoded;charset=UTF-8',
             },
@@ -345,12 +336,14 @@
             result.className = 'error';
             result.textContent =
               'There was an error registering you. Please approach the registration desk.';
-            console.error(data);
             return;
           }
 
+          // Success UI
           input.value = '';
           result.className = 'success';
+
+          const displayName = data.name || value;
 
           let seatText = '';
           if (data.tableNo || data.tableName) {
@@ -364,18 +357,23 @@
               'Please proceed to the ushers for your assigned table.';
           }
 
-          // 🔐 Fool-proof message includes guest name
-          result.innerHTML =
-            "<strong>You've successfully registered to the event!</strong><br>" +
-            'Registered under: <strong>' + (data.name || value) + '</strong>.<br>' +
-            seatText;
+          // === NEW: Double-registration messaging ===
+          if (data.alreadyRegistered) {
+            result.innerHTML =
+              '<strong>You are already registered to the event.</strong><br>' +
+              'Registered under: <strong>' + displayName + '</strong>.<br>' +
+              seatText;
+          } else {
+            result.innerHTML =
+              "<strong>You've successfully registered to the event!</strong><br>" +
+              'Registered under: <strong>' + displayName + '</strong>.<br>' +
+              seatText;
+          }
         } catch (err) {
           result.className = 'error';
           result.textContent =
             'There was an error registering you. Please approach the registration desk.';
-          console.error(err);
         } finally {
-          // 🔁 Restore button state
           btn.disabled = false;
           btn.textContent = originalLabel;
         }
